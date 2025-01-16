@@ -48,9 +48,16 @@
             event.preventDefault();
             const url = document.getElementById('newWebsiteUrl').value;
             
+            // Check if URL is not empty
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            // Send POST request to Cloudflare Worker with valid JSON format
             fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/', {
                 method: 'POST',
-                body: JSON.stringify({ url: url }),
+                body: JSON.stringify({ url: url }), // Correct JSON format
                 headers: {
                     'Content-Type': 'application/json',
                 },
