@@ -3,72 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Directory</title>
+    <title>Add Your Site</title>
+    <style>
+        /* Loading spinner style */
+        #loadingSpinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hide the form while loading */
+        #addWebsiteForm {
+            display: block;
+        }
+        #addWebsiteForm.loading {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Web Directory</h1>
-
+    <h2>Add a New Website</h2>
     <form id="addWebsiteForm">
-        <input type="url" id="newWebsiteUrl" placeholder="Enter website URL" required>
+        <label for="newWebsiteUrl">Enter Website URL:</label>
+        <input type="text" id="newWebsiteUrl" name="newWebsiteUrl" required>
         <button type="submit">Add Website</button>
     </form>
 
-    <h2>All Added Websites:</h2>
-    <div id="siteList">
+    <div id="loadingSpinner"></div>
+
+    <ul id="websiteList">
         <!-- Dynamically added websites will appear here -->
-    </div>
+    </ul>
 
     <script>
-        // Fetching the list of added websites from GitHub
-        fetch('https://raw.githubusercontent.com/alexs771/add-your-site/main/index.html')
-            .then(response => response.text())
-            .then(data => {
-                const regex = /<a href="([^"]+)"/g;
-                let matches;
-                const websites = [];
-                while ((matches = regex.exec(data)) !== null) {
-                    websites.push(matches[1]);
-                }
-                displayWebsites(websites);
-            });
-
-        // Displaying the websites on the page
-        function displayWebsites(websites) {
-            const siteListDiv = document.getElementById('siteList');
-            siteListDiv.innerHTML = ''; // Clear existing content
-            websites.forEach(website => {
-                const websiteLink = document.createElement('div');
-                websiteLink.innerHTML = `<a href="${website}" target="_blank">${website}</a>`;
-                siteListDiv.appendChild(websiteLink);
-            });
+        // Validate URL format using regex
+        function isValidUrl(url) {
+            const urlPattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])?)\\.)+[a-z]{2,}|'+ // domain name
+                'localhost|'+ // localhost
+                '\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|'+ // IP address
+                '\\[?[a-fA-F0-9]*:[a-fA-F0-9:]+\\]?)'+ // IPv6
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+            return urlPattern.test(url);
         }
 
-        // Handle form submission for adding new website
         document.getElementById('addWebsiteForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const url = document.getElementById('newWebsiteUrl').value;
             
-            // Check if URL is not empty
-            if (!url) {
+            const url = document.getElementById('newWebsiteUrl').value;
+
+            // Validate URL
+            if (!isValidUrl(url)) {
                 alert('Please enter a valid URL');
                 return;
             }
 
-            // Send POST request to Cloudflare Worker with valid JSON format
+            // Show loading spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('addWebsiteForm').classList.add('loading');
+
+            // Send POST request to Cloudflare Worker
             fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/', {
                 method: 'POST',
-                body: JSON.stringify({ url: url }), // Correct JSON format
+                body: JSON.stringify({ url: url }),
                 headers: {
                     'Content-Type': 'application/json',
                 },
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                alert(data);
-                location.reload(); // Reload the page to display the updated list of websites
+                // Hide loading spinner and show success message
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('addWebsiteForm').classList.remove('loading');
+                alert(data.message);
+
+                // Add the new website to the list without reloading the page
+                const websiteList = document.getElementById('websiteList');
+                const newItem = document.createElement('li');
+                newItem.textContent = url;
+                websiteList.appendChild(newItem);
+
+                // Clear the input field
+                document.getElementById('newWebsiteUrl').value = '';
             })
             .catch(error => {
-                alert('Error adding website: ' + error);
+                // Hide loading spinner and show error message
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('addWebsiteForm').classList.remove('loading');
+                console.error('Error adding website:', error);
+                alert('There was a problem adding the website. Please try again later.');
             });
         });
     </script>
