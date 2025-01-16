@@ -3,87 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website Collection</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            font-size: 2em;
-            margin-top: 20px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-        }
-        input, button {
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Web Directory</title>
+</head>
+<body>
+    <h1>Welcome to the Web Directory</h1>
+
+    <form id="addWebsiteForm">
+        <input type="url" id="newWebsiteUrl" placeholder="Enter website URL" required>
+        <button type="submit">Add Website</button>
+    </form>
+
+    <h2>All Added Websites:</h2>
+    <div id="siteList">
+        <!-- Dynamically added websites will appear here -->
+    </div>
+
     <script>
-        // Fetch and display sites dynamically from GitHub's sites.json file
-        async function fetchSites() {
-            const response = await fetch('https://raw.githubusercontent.com/alexs771/add-your-site/main/sites.json');
-            const sites = await response.json();
-            const list = document.getElementById('siteList');
-            list.innerHTML = '';
-            sites.forEach(site => {
-                const li = document.createElement('li');
-                li.innerHTML = `<a href="${site}" target="_blank">${site}</a>`;
-                list.appendChild(li);
+        // Fetching the list of added websites from GitHub
+        fetch('https://raw.githubusercontent.com/alexs771/add-your-site/main/index.html')
+            .then(response => response.text())
+            .then(data => {
+                const regex = /<a href="([^"]+)"/g;
+                let matches;
+                const websites = [];
+                while ((matches = regex.exec(data)) !== null) {
+                    websites.push(matches[1]);
+                }
+                displayWebsites(websites);
+            });
+
+        // Displaying the websites on the page
+        function displayWebsites(websites) {
+            const siteListDiv = document.getElementById('siteList');
+            siteListDiv.innerHTML = ''; // Clear existing content
+            websites.forEach(website => {
+                const websiteLink = document.createElement('div');
+                websiteLink.innerHTML = `<a href="${website}" target="_blank">${website}</a>`;
+                siteListDiv.appendChild(websiteLink);
             });
         }
 
-        // Add new site URL to GitHub using Cloudflare Worker
-        async function addSite() {
-            const newSite = document.getElementById('siteInput').value;
-            if (!newSite) {
-                alert('Please enter a site URL!');
-                return;
-            }
-
-            const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/', {
+        // Handle form submission for adding new website
+        document.getElementById('addWebsiteForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('newWebsiteUrl').value;
+            
+            fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/', {
                 method: 'POST',
+                body: JSON.stringify({ url: url }),
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ url: newSite }),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload(); // Reload the page to display the updated list of websites
+            })
+            .catch(error => {
+                alert('Error adding website: ' + error);
             });
-
-            if (response.ok) {
-                alert('Site added successfully!');
-                fetchSites(); // Refresh the site list after adding
-            } else {
-                alert('Failed to add site. Please try again.');
-            }
-        }
-
-        // Fetch and display sites when the page is loaded
-        document.addEventListener('DOMContentLoaded', fetchSites);
+        });
     </script>
-</head>
-<body>
-    <h1>My Websites</h1>
-    <ul id="siteList"></ul>
-    <input type="text" id="siteInput" placeholder="Add new site URL" />
-    <button onclick="addSite()">Add Site</button>
 </body>
 </html>
