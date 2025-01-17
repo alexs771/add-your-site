@@ -7,166 +7,85 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 20px;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    h1 {
+    h1, h2 {
       text-align: center;
     }
-    .form-group {
-      margin: 10px 0;
-    }
-    input[type="text"], input[type="url"] {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 3px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    .website-list {
-      margin-top: 20px;
-    }
-    .website-list ul {
+    #websiteList {
       list-style-type: none;
       padding: 0;
     }
-    .website-list li {
+    #websiteList li {
       margin: 10px 0;
     }
-    .error {
-      color: red;
-      text-align: center;
+    #websiteList li a {
+      text-decoration: none;
+      color: #007BFF;
     }
-    .success {
-      color: green;
+    #websiteList li a:hover {
+      text-decoration: underline;
+    }
+    form {
       text-align: center;
+      margin-bottom: 20px;
+    }
+    form input, form button {
+      margin: 5px;
+      padding: 8px;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <h1>Web Directory</h1>
-
-    <!-- Error and success messages -->
-    <div id="message"></div>
-
-    <!-- Form to add a new website -->
-    <div class="form-group">
-      <label for="name">Website Name</label>
-      <input type="text" id="name" placeholder="Enter website name" required>
-    </div>
-
-    <div class="form-group">
-      <label for="url">Website URL</label>
-      <input type="url" id="url" placeholder="Enter website URL" required>
-    </div>
-
-    <button id="addWebsiteButton">Add Website</button>
-
-    <div class="website-list">
-      <h2>Directory List</h2>
-      <ul id="websiteList"></ul>
-    </div>
-  </div>
+  <h1>Web Directory</h1>
+  <h2>Add Your Website</h2>
+  <form id="addWebsiteForm">
+    <input type="text" id="siteName" placeholder="Website Name" required />
+    <input type="url" id="siteURL" placeholder="Website URL" required />
+    <button type="submit">Add Website</button>
+  </form>
+  <h2>Website List</h2>
+  <ul id="websiteList"></ul>
 
   <script>
-    const addWebsiteButton = document.getElementById('addWebsiteButton');
-    const nameInput = document.getElementById('name');
-    const urlInput = document.getElementById('url');
-    const websiteList = document.getElementById('websiteList');
-    const messageDiv = document.getElementById('message');
+    const apiBase = 'https://restless-scene-c9fc.alexsimmons169.workers.dev/api';
 
-    const workerURL = 'https://restless-scene-c9fc.alexsimmons169.workers.dev'; // Your Cloudflare Worker URL
-
-    // Fetch the list of websites from the backend
     async function fetchWebsites() {
       try {
-        const response = await fetch(`${workerURL}/api/list-websites`);
-        const data = await response.json();
-
-        if (response.ok) {
-          renderWebsiteList(data);
-        } else {
-          showMessage('Error fetching websites: ' + data.error, 'error');
-        }
-      } catch (error) {
-        showMessage('Network error: ' + error.message, 'error');
-      }
-    }
-
-    // Render the website list
-    function renderWebsiteList(websites) {
-      websiteList.innerHTML = '';
-      websites.forEach(website => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${website.name}: ${website.url}`;
-        websiteList.appendChild(listItem);
-      });
-    }
-
-    // Add a new website
-    async function addWebsite(name, url) {
-      const data = { name, url };
-
-      try {
-        const response = await fetch(`${workerURL}/api/add-website`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
+        const response = await fetch(`${apiBase}/list-websites`);
+        if (!response.ok) throw new Error('Failed to fetch websites');
+        const websites = await response.json();
+        const websiteList = document.getElementById('websiteList');
+        websiteList.innerHTML = '';
+        websites.forEach(({ name, url }) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
+          websiteList.appendChild(li);
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          showMessage('Website added successfully!', 'success');
-          fetchWebsites(); // Reload the website list
-        } else {
-          showMessage('Error adding website: ' + result.error, 'error');
-        }
       } catch (error) {
-        showMessage('Network error: ' + error.message, 'error');
+        alert(`Error fetching websites: ${error.message}`);
       }
     }
 
-    // Show success or error message
-    function showMessage(message, type) {
-      messageDiv.textContent = message;
-      messageDiv.className = type === 'error' ? 'error' : 'success';
-    }
-
-    // Event listener for adding website
-    addWebsiteButton.addEventListener('click', () => {
-      const name = nameInput.value.trim();
-      const url = urlInput.value.trim();
-
-      if (name && url) {
-        addWebsite(name, url);
-      } else {
-        showMessage('Please fill in both fields.', 'error');
+    document.getElementById('addWebsiteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('siteName').value.trim();
+      const url = document.getElementById('siteURL').value.trim();
+      try {
+        const response = await fetch(`${apiBase}/add-website`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, url }),
+        });
+        if (!response.ok) throw new Error(await response.text());
+        fetchWebsites();
+        e.target.reset();
+      } catch (error) {
+        alert(`Error adding website: ${error.message}`);
       }
     });
 
-    // Initialize the website list
+    // Load websites on page load
     fetchWebsites();
   </script>
 </body>
