@@ -30,11 +30,14 @@
       try {
         const response = await fetch(`${API_BASE_URL}/list-websites`);
         if (!response.ok) {
-          throw new Error(`Error fetching websites: ${response.statusText}`);
+          const errorData = await response.json();
+          console.error('Error fetching websites:', errorData.error || response.statusText);
+          throw new Error(`Error fetching websites: ${errorData.error || response.statusText}`);
         }
         return await response.json();
       } catch (err) {
-        document.getElementById('error-message').textContent = err.message;
+        console.error('Error in fetchWebsites:', err);
+        document.getElementById('error-message').textContent = `Failed to fetch websites: ${err.message}`;
         return [];
       }
     }
@@ -49,10 +52,12 @@
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('Error adding website:', errorData.error || response.statusText);
           throw new Error(errorData.error || 'Failed to add website');
         }
       } catch (err) {
-        document.getElementById('error-message').textContent = err.message;
+        console.error('Error in addWebsite:', err);
+        document.getElementById('error-message').textContent = `Failed to add website: ${err.message}`;
       }
     }
 
