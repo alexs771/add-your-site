@@ -1,34 +1,77 @@
-<script>
-  async function fetchWebsites() {
-    const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/list-websites');
-    const websites = await response.json();
-    const websiteList = document.getElementById('websiteList');
-    websiteList.innerHTML = '';
-    websites.forEach(({ name, url }) => {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
-      websiteList.appendChild(li);
-    });
-  }
-
-  document.getElementById('addWebsiteForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('siteName').value;
-    const url = document.getElementById('siteURL').value;
-
-    const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/add-website', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, url }),
-    });
-
-    if (response.ok) {
-      fetchWebsites();
-      e.target.reset();
-    } else {
-      alert('Failed to add website');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Directory</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
-  });
+    h1 {
+      text-align: center;
+    }
+    #websiteList {
+      list-style-type: none;
+      padding: 0;
+    }
+    #websiteList li {
+      margin: 10px 0;
+    }
+    #websiteList li a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    #websiteList li a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Directory</h1>
+  <h2>Add Your Website</h2>
+  <form id="addWebsiteForm">
+    <input type="text" id="siteName" placeholder="Website Name" required>
+    <input type="url" id="siteURL" placeholder="Website URL" required>
+    <button type="submit">Add Website</button>
+  </form>
+  <h2>Website List</h2>
+  <ul id="websiteList"></ul>
 
-  fetchWebsites();
-</script>
+  <script>
+    async function fetchWebsites() {
+      const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/list-websites');
+      const websites = await response.json();
+      const websiteList = document.getElementById('websiteList');
+      websiteList.innerHTML = '';
+      websites.forEach(({ name, url }) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
+        websiteList.appendChild(li);
+      });
+    }
+
+    document.getElementById('addWebsiteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('siteName').value;
+      const url = document.getElementById('siteURL').value;
+
+      const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/add-website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, url }),
+      });
+
+      if (response.ok) {
+        fetchWebsites();
+        e.target.reset();
+      } else {
+        alert('Failed to add website');
+      }
+    });
+
+    fetchWebsites();
+  </script>
+</body>
+</html>
