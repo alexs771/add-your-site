@@ -7,86 +7,92 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      padding: 20px;
     }
-    h1, h2 {
-      text-align: center;
+    .site-list {
+      margin-top: 20px;
     }
-    #websiteList {
-      list-style-type: none;
-      padding: 0;
+    .site {
+      margin-bottom: 10px;
     }
-    #websiteList li {
-      margin: 10px 0;
-    }
-    #websiteList li a {
-      text-decoration: none;
-      color: #007BFF;
-    }
-    #websiteList li a:hover {
-      text-decoration: underline;
-    }
-    form {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    form input, form button {
-      margin: 5px;
-      padding: 8px;
+    .form {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>Web Directory</h1>
-  <h2>Add Your Website</h2>
-  <form id="addWebsiteForm">
-    <input type="text" id="siteName" placeholder="Website Name" required />
-    <input type="url" id="siteURL" placeholder="Website URL" required />
+  <div id="site-list" class="site-list"></div>
+  <form id="add-site-form" class="form">
+    <h2>Add a Website</h2>
+    <label>
+      Name:
+      <input type="text" id="site-name" required>
+    </label>
+    <br>
+    <label>
+      URL:
+      <input type="url" id="site-url" required>
+    </label>
+    <br><br>
     <button type="submit">Add Website</button>
   </form>
-  <h2>Website List</h2>
-  <ul id="websiteList"></ul>
 
   <script>
-    const apiBase = 'https://restless-scene-c9fc.alexsimmons169.workers.dev/api';
+    const API_BASE = '/api';
 
     async function fetchWebsites() {
       try {
-        const response = await fetch(`${apiBase}/list-websites`);
-        if (!response.ok) throw new Error('Failed to fetch websites');
+        const response = await fetch(`${API_BASE}/list-websites`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch websites');
+        }
         const websites = await response.json();
-        const websiteList = document.getElementById('websiteList');
-        websiteList.innerHTML = '';
-        websites.forEach(({ name, url }) => {
-          const li = document.createElement('li');
-          li.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
-          websiteList.appendChild(li);
-        });
+        renderWebsites(websites);
       } catch (error) {
         alert(`Error fetching websites: ${error.message}`);
       }
     }
 
-    document.getElementById('addWebsiteForm').addEventListener('submit', async (e) => {
+    function renderWebsites(websites) {
+      const siteList = document.getElementById('site-list');
+      siteList.innerHTML = '';
+      websites.forEach(({ name, url }) => {
+        const siteElement = document.createElement('div');
+        siteElement.className = 'site';
+        siteElement.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
+        siteList.appendChild(siteElement);
+      });
+    }
+
+    document.getElementById('add-site-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('siteName').value.trim();
-      const url = document.getElementById('siteURL').value.trim();
+      const name = document.getElementById('site-name').value;
+      const url = document.getElementById('site-url').value;
+
       try {
-        const response = await fetch(`${apiBase}/add-website`, {
+        const response = await fetch(`${API_BASE}/add-website`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, url }),
         });
-        if (!response.ok) throw new Error(await response.text());
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+
+        document.getElementById('site-name').value = '';
+        document.getElementById('site-url').value = '';
         fetchWebsites();
-        e.target.reset();
       } catch (error) {
         alert(`Error adding website: ${error.message}`);
       }
     });
 
-    // Load websites on page load
+    // Initial fetch
     fetchWebsites();
   </script>
 </body>
 </html>
+`;
