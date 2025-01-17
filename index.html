@@ -1,111 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Your Site</title>
-    <style>
-        /* Loading spinner style */
-        #loadingSpinner {
-            display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
-            margin: 10px auto;
-        }
+<script>
+  async function fetchWebsites() {
+    const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/list-websites');
+    const websites = await response.json();
+    const websiteList = document.getElementById('websiteList');
+    websiteList.innerHTML = '';
+    websites.forEach(({ name, url }) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${name}</strong>: <a href="${url}" target="_blank">${url}</a>`;
+      websiteList.appendChild(li);
+    });
+  }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+  document.getElementById('addWebsiteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('siteName').value;
+    const url = document.getElementById('siteURL').value;
 
-        /* Hide the form while loading */
-        #addWebsiteForm {
-            display: block;
-        }
-        #addWebsiteForm.loading {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <h2>Add a New Website</h2>
-    <form id="addWebsiteForm">
-        <label for="newWebsiteUrl">Enter Website URL:</label>
-        <input type="text" id="newWebsiteUrl" name="newWebsiteUrl" required>
-        <button type="submit">Add Website</button>
-    </form>
+    const response = await fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/api/add-website', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, url }),
+    });
 
-    <div id="loadingSpinner"></div>
+    if (response.ok) {
+      fetchWebsites();
+      e.target.reset();
+    } else {
+      alert('Failed to add website');
+    }
+  });
 
-    <ul id="websiteList">
-        <!-- Dynamically added websites will appear here -->
-    </ul>
-
-    <script>
-        // Validate URL format using regex
-        function isValidUrl(url) {
-            const urlPattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])?)\\.)+[a-z]{2,}|'+ // domain name
-                'localhost|'+ // localhost
-                '\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|'+ // IP address
-                '\\[?[a-fA-F0-9]*:[a-fA-F0-9:]+\\]?)'+ // IPv6
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-            return urlPattern.test(url);
-        }
-
-        document.getElementById('addWebsiteForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const url = document.getElementById('newWebsiteUrl').value;
-
-            // Validate URL
-            if (!isValidUrl(url)) {
-                alert('Please enter a valid URL');
-                return;
-            }
-
-            // Show loading spinner
-            document.getElementById('loadingSpinner').style.display = 'block';
-            document.getElementById('addWebsiteForm').classList.add('loading');
-
-            // Send POST request to Cloudflare Worker
-            fetch('https://restless-scene-c9fc.alexsimmons169.workers.dev/', {
-                method: 'POST',
-                body: JSON.stringify({ url: url }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Hide loading spinner and show success message
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.getElementById('addWebsiteForm').classList.remove('loading');
-                alert(data.message);
-
-                // Add the new website to the list without reloading the page
-                const websiteList = document.getElementById('websiteList');
-                const newItem = document.createElement('li');
-                newItem.textContent = url;
-                websiteList.appendChild(newItem);
-
-                // Clear the input field
-                document.getElementById('newWebsiteUrl').value = '';
-            })
-            .catch(error => {
-                // Hide loading spinner and show error message
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.getElementById('addWebsiteForm').classList.remove('loading');
-                console.error('Error adding website:', error);
-                alert('There was a problem adding the website. Please try again later.');
-            });
-        });
-    </script>
-</body>
-</html>
+  fetchWebsites();
+</script>
