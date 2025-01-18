@@ -1,3 +1,4 @@
 [
-  { "name": "Example Site", "url": "https://example.com" }
+  { "name": "Google", "url": "https://www.google.com" },
+  { "name": "YouTube", "url": "https://www.youtube.com" }
 ]
