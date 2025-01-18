@@ -1,92 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Directory</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Top Global Websites Directory</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    h1 { color: #333; }
-    .error { color: red; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin: 0.5rem 0; }
-    form { margin-top: 1rem; }
+    .a, a {color: black; line-height: 3em; text-transform: uppercase; font-size: 16px;} 
+    .a:hover, a:hover {text-decoration: none; color: #0723e9;}
+    .container, container {max-width: 1000px;}  
+    body {
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-size: 20px;
+        line-height: 2em;
+        color: #333;
+        background-color: #fff;
+    }
+    .table, table {
+        background-color: transparent;
+        text-align: justify;
+        width: 100%;
+        margin-bottom: 50px;
+    }
+    td, th {
+        padding-bottom: 25px;
+        font-size: 16px;
+    }
+    .topheadbar {
+        margin-top: 20px;
+        margin-bottom: 40px;
+        background: #ffffff;
+        border: 1px solid #d5d5d5;
+        width: auto;
+        height: 50px;
+        border-radius: 7px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: black !important;
+    }
+    .contactbutton {
+        font-size: 15px;
+        font-weight: bold;
+        float: right;
+        color: black !important;
+        line-height: 1.8em;
+        border: 1px solid #bbbbbb;
+        padding: 0px 8px;
+        border-radius: 7px;
+    }
   </style>
 </head>
 <body>
-  <h1>Web Directory</h1>
-  <div id="error-message" class="error"></div>
-  <ul id="websites-list"></ul>
-  <form id="add-website-form">
-    <input type="text" id="website-name" placeholder="Website Name" required />
-    <input type="url" id="website-url" placeholder="Website URL" required />
-    <button type="submit">Add Website</button>
-  </form>
+<div style="background: white; border: 1px solid #dfdfdf; margin-top: 20px; border-top: 5px solid #fa046d;" class='container'>
+  <div class='container topheadbar'>
+    <h1 style="float:left; font-size: 24px; margin-top: 0;">
+      <a href="/index" style="color: black !important; line-height: 1.5em; font-size: 22px; font-style: italic;">WEB DIRECTORY</a>
+    </h1>
+    <a class="contactbutton" rel="noopener noreferrer nofollow" target="_blank" href="https://contact-web-directory.pages.dev">CONTACT</a>
+  </div>
+  <div class="container" style="text-align: center; max-width: 100%;">
+    <p style="font-size: 12px; margin: 0 !important;">advertisement</p>
+    <a target="_blank" rel="noopener noreferrer nofollow" href="https://backlinks-offer.pages.dev/">
+      <img style="max-width: 740px; padding-bottom: 20px;" src="https://web-directory.pages.dev/banner.png">
+    </a>
+  </div>
+  <div class="container" style="text-align: center; max-width: 100%;">
+    <p style="background: #ffffed; font-size: 14px; padding: 5px; font-weight: 100; border: 1px solid #d5d5d5; font-style: italic;"> 
+      <a target="_blank" rel="noopener noreferrer nofollow" href="https://add-your-website.pages.dev/">ADD YOUR WEBSITE</a> 
+    </p>
+  </div>
+  <div class='container' style="text-align: left; max-width: 100%;">
+    <h1 style="font-size: 18px;">🌐 TOP WEBSITES</h1>
+    <p style="font-size: 16px; font-style: italic;">📁 WELCOME TO THE TOP WEBSITES DIRECTORY</p>
+    <br/>
+    <H3>MOST POPULAR 🔥</H3>
+    <div id="visible-links">
+      <!-- Visible links will be dynamically loaded here -->
+    </div>
+    <div style="visibility: hidden; display: none;" id="hidden-links">
+      <!-- Hidden links will be dynamically loaded here -->
+    </div>
+  </div>
+</div>
+<div style="font-size: 15px; background: grey; text-align:center; color:white; padding-top:20px;" class='container'>
+  <p>WEB DIRECTORY 2023 - 2024</p>
+</div>
+<script>
+  // Fetch sites from sites.json and populate the links
+  fetch('/sites.json')
+    .then(response => response.json())
+    .then(sites => {
+      const visibleLinks = document.getElementById('visible-links');
+      const hiddenLinks = document.getElementById('hidden-links');
 
-  <script>
-    const API_BASE_URL = 'https://restless-scene-c9fc.alexsimmons169.workers.dev/api';
+      sites.forEach(site => {
+        // Add to visible links
+        const visibleLink = document.createElement('a');
+        visibleLink.href = site.url;
+        visibleLink.target = '_blank';
+        visibleLink.rel = 'nofollow noreferrer noopener';
+        visibleLink.textContent = site.name;
+        visibleLinks.appendChild(visibleLink);
+        visibleLinks.innerHTML += ' // ';
 
-    async function fetchWebsites() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/list-websites`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Error fetching websites:', errorData.error || response.statusText);
-          throw new Error(`Error fetching websites: ${errorData.error || response.statusText}`);
-        }
-        return await response.json();
-      } catch (err) {
-        console.error('Error in fetchWebsites:', err);
-        document.getElementById('error-message').textContent = `Failed to fetch websites: ${err.message}`;
-        return [];
-      }
-    }
-
-    async function addWebsite(name, url) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/add-website`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, url }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Error adding website:', errorData.error || response.statusText);
-          throw new Error(errorData.error || 'Failed to add website');
-        }
-      } catch (err) {
-        console.error('Error in addWebsite:', err);
-        document.getElementById('error-message').textContent = `Failed to add website: ${err.message}`;
-      }
-    }
-
-    function renderWebsites(websites) {
-      const list = document.getElementById('websites-list');
-      list.innerHTML = '';
-      websites.forEach((site) => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${site.name} - ${site.url}`;
-        list.appendChild(listItem);
+        // Add to hidden links
+        const hiddenLink = document.createElement('a');
+        hiddenLink.href = site.url;
+        hiddenLink.textContent = '.';
+        hiddenLinks.appendChild(hiddenLink);
       });
-    }
-
-    document.getElementById('add-website-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('website-name').value;
-      const url = document.getElementById('website-url').value;
-
-      await addWebsite(name, url);
-      const websites = await fetchWebsites();
-      renderWebsites(websites);
-    });
-
-    async function initialize() {
-      const websites = await fetchWebsites();
-      renderWebsites(websites);
-    }
-
-    initialize();
-  </script>
+    })
+    .catch(error => console.error('Error fetching sites:', error));
+</script>
 </body>
 </html>
