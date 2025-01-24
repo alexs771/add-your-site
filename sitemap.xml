@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://add-your-site.pages.dev/</loc>
+    <lastmod>{% raw %}{{ date | date_to_xmlschema }}{% endraw %}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Add more pages if needed -->
+</urlset>
