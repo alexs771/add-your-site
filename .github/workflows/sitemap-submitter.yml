@@ -1,0 +1,15 @@
+name: Submit Sitemap
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  submit-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit to Search Engines
+        run: |
+          curl "https://www.google.com/ping?sitemap=https://add-your-site.pages.dev/sitemap.xml"
+          curl "https://www.bing.com/ping?sitemap=https://add-your-site.pages.dev/sitemap.xml"
